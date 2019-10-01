@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "SGP Inventário",
+    "slug": "expo-template-bare",
+    "icon": "./images/icon.png",
+    "privacy": "unlisted",
+    "sdkVersion": "34.0.0",
+    "version": "1.0.1",
+    "entryPoint": "node_modules/expo/AppEntry.js",
+    "notification": {
+      "icon": "./images/icon.png",
+      "color": "#000000"
+    },
+    "androidStatusBarColor": "#000000",
+    "loading": {
+      "icon": "./images/icon.png",
+      "backgroundColor": "#000000"
+    },
+    "splash": {
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "bundleIdentifier": "com.sgp.inventario"
+    },
+    "android": {
+      "package": "com.sgp.inventario",
+      "publishBundlePath": "android\\app\\src\\main\\assets\\shell-app.bundle",
+      "publishManifestPath": "android\\app\\src\\main\\assets\\shell-app-manifest.json"
+    },
+    "platforms": ["ios", "android", "web"]
+  }
+}

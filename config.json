@@ -1,0 +1,8 @@
+{
+  "database": {
+    "name": "Offlinedatabase",
+    "version": "1.0",
+    "description": "Offline Database",
+    "size": 200000
+  }
+}
