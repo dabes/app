@@ -111,25 +111,53 @@ export async function getconfigs() {
     config.database.description,
     config.database.size
   );
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      tx => {
+        tx.executeSql("select * from configuracoes", [], (txn, res) => {
+          var len = res.rows.length;
+          let configuracoes = [];
+          let dados = {};
+          for (let i = 0; i < len; i++) {
+            let row = res.rows.item(i);
+            tipo = row.tipo;
+            valor = row.valor;
+            dados[tipo] = valor;
+          }
+          console.log(dados);
+          resolve(dados);
+        });
+      },
+      error => {
+        reject(error);
+        console.log(error);
+      }
+    );
+  });
+}
 
-  await db.transaction(
-    tx => {
-      tx.executeSql("select * from configuracoes", [], (txn, res) => {
-        var len = res.rows.length;
-        let configuracoes = [];
-        let dados = {};
-        for (let i = 0; i < len; i++) {
-          let row = res.rows.item(i);
-          tipo = row.tipo;
-          valor = row.valor;
-          dados[tipo] = valor;
-          configuracoes.push(dados);
-        }
-        return configuracoes;
-      });
-    },
-    error => {
-      console.log(error);
-    }
+export async function setmatcentrocusto(valor) {
+  db = SQLite.openDatabase(
+    config.database.name,
+    config.database.version,
+    config.database.description,
+    config.database.size
   );
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      tx => {
+        tx.executeSql(
+          "update configuracoes set valor = ? where tipo = 'mat_centro_custo'",
+          [valor],
+          (txn, res) => {
+            resolve(true);
+          }
+        );
+      },
+      error => {
+        reject(error);
+        console.log(error);
+      }
+    );
+  });
 }

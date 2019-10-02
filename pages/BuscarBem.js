@@ -26,8 +26,8 @@ import config from "../config";
 export default class BuscarBem extends Component {
   constructor(props) {
     super(props);
+    console.log(global.ip, global.mat_centro_custo);
     photo = Image.resolveAssetSource(require("../images/foto.png"));
-
     this.state = {
       dados: {
         id: null,

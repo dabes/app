@@ -5,11 +5,14 @@ import { createDrawerNavigator } from "react-navigation-drawer";
 import { createStackNavigator } from "react-navigation-stack";
 import { ActivityIndicator } from "react-native";
 import * as Font from "expo-font";
+import { initDB, getconfigs } from "./database.js";
 // Telas
 import BuscarBem from "./pages/BuscarBem";
 import CarregarBens from "./pages/CarregarBens";
 import DescarregarBens from "./pages/DescarregarBens";
-import { initDB, getconfigs } from "./database.js";
+import Configurations from "./pages/Configurations";
+import Decider from "./pages/Decider";
+
 //Estrutura do construtor do menu
 class NavigationDrawerStructure extends Component {
   //Structure for the navigatin Drawer
@@ -38,6 +41,36 @@ const BuscaBem_StackNavigator = createStackNavigator({
     screen: BuscarBem,
     navigationOptions: ({ navigation }) => ({
       title: "Buscar Bem",
+      headerLeft: <NavigationDrawerStructure navigationProps={navigation} />,
+      headerStyle: {
+        backgroundColor: "#89c396"
+      },
+      headerTintColor: "#fff"
+    })
+  }
+});
+
+const Decider_StackNavigator = createStackNavigator({
+  //All the screen from the BuscarBem will be indexed here
+  Decider: {
+    screen: Decider,
+    navigationOptions: ({ navigation }) => ({
+      title: "Decider",
+      headerLeft: <NavigationDrawerStructure navigationProps={navigation} />,
+      headerStyle: {
+        backgroundColor: "#89c396"
+      },
+      headerTintColor: "#fff"
+    })
+  }
+});
+
+const Configurations_StackNavigator = createStackNavigator({
+  //All the screen from the BuscarBem will be indexed here
+  Configurations: {
+    screen: Configurations,
+    navigationOptions: ({ navigation }) => ({
+      title: "Configurações",
       headerLeft: <NavigationDrawerStructure navigationProps={navigation} />,
       headerStyle: {
         backgroundColor: "#89c396"
@@ -99,37 +132,89 @@ const MenuNavigator = createDrawerNavigator({
     navigationOptions: {
       drawerLabel: "Descarregar Bens"
     }
+  },
+  Configurations: {
+    //Title
+    screen: Configurations_StackNavigator,
+    navigationOptions: {
+      drawerLabel: "Configurações"
+    }
   }
 });
 
-const Apps = createSwitchNavigator({
-  Loading: {
-    screen: MenuNavigator
+const MenuNavigatorConfigurations = createDrawerNavigator({
+  Configurations: {
+    //Title
+    screen: Configurations_StackNavigator,
+    navigationOptions: {
+      drawerLabel: "Configurações"
+    }
+  },
+  BuscaBem: {
+    //Title
+    screen: BuscaBem_StackNavigator,
+    navigationOptions: {
+      drawerLabel: "Buscar Bem"
+    }
+  },
+  CarregarBens: {
+    //Title
+    screen: CarregarBens_StackNavigator,
+    navigationOptions: {
+      drawerLabel: "Carregar Bens"
+    }
+  },
+  DescarregarBens: {
+    //Title
+    screen: DescarregarBens_StackNavigator,
+    navigationOptions: {
+      drawerLabel: "Descarregar Bens"
+    }
   }
 });
+
+const MenuNavigatorDecider = createDrawerNavigator({
+  Decider: {
+    //Title
+    screen: Decider_StackNavigator,
+    navigationOptions: {
+      drawerLabel: "Decider"
+    }
+  }
+});
+
+const Apps = createSwitchNavigator(
+  {
+    Applic: MenuNavigator,
+    Configurations: MenuNavigatorConfigurations,
+    Decider: MenuNavigatorDecider
+  },
+  {
+    initialRouteName: "Decider"
+  }
+);
 
 const AppContainer = createAppContainer(Apps);
 
 export default class App extends React.Component {
-  static navigationOptions = {
-    header: null
-  };
+  constructor(props) {
+    super(props);
+    this.navigationOptions = {
+      header: null
+    };
 
-  state = {
-    isReady: false
-  };
+    this.state = {
+      isReady: false,
+      selected_mat: false
+    };
+    getconfigs().then(configuracoes => {
+      global.ip = configuracoes.ip === null ? "10.0.18.70" : configuracoes.ip;
+      global.mat_centro_custo = configuracoes.mat_centro_custo;
+    });
+  }
 
   componentWillMount = async () => {
     initDB();
-
-    configuracoes = await getconfigs();
-    // ip = configuracoes.ip;
-    console.log("b");
-    console.log(configuracoes);
-    configuracoes.forEach((key, val) => {
-      console.log(key, val);
-    });
-    console.log("b");
     await Font.loadAsync({
       Roboto: require("native-base/Fonts/Roboto.ttf"),
       Roboto_medium: require("native-base/Fonts/Roboto_medium.ttf")
@@ -140,7 +225,6 @@ export default class App extends React.Component {
   render() {
     if (!this.state.isReady) {
       return <ActivityIndicator />;
-    }
-    return <AppContainer />;
+    } else return <AppContainer vars={global} />;
   }
 }

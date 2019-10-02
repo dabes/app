@@ -44,14 +44,19 @@ export default class CarregarBens extends Component {
         </View>
       )
     });
-    await timeout(10000, fetch(`http://10.0.200.4:3000/api/bens`))
+    this.db.transaction(txn => {
+      txn.executeSql("delete from ptr_bem");
+    });
+    await timeout(10000, fetch("http://" + global.ip + ":3000/api/bens"))
       .then(response => {
         response.json().then(a => {
           let dados = "";
           let counter = 0;
+          let counter_end = a.length;
           a.forEach(obj => {
             this.db.transaction(
               txn => {
+                // txn.executeSql("delete from ptr_bem");
                 txn.executeSql(
                   "insert into ptr_bem(id,codigo,descricao,mat_centro_custo,grl_entidade,produto_descricao,data_hora)" +
                     "values (?,?,?,?,?,?,?);",
@@ -69,7 +74,9 @@ export default class CarregarBens extends Component {
                     this.setState({
                       carregar: (
                         <View>
-                          <Text>{counter} Carregadas</Text>
+                          <Text>
+                            {counter} de {counter_end} Carregadas
+                          </Text>
                         </View>
                       )
                     });
@@ -101,7 +108,7 @@ export default class CarregarBens extends Component {
         });
       });
 
-    await timeout(10000, fetch(`http://10.0.200.4:3000/api/mat`))
+    await timeout(10000, fetch("http://" + global.ip + ":3000/api/mat"))
       .then(response => {
         response.json().then(a => {
           let dados = "";
