@@ -208,7 +208,8 @@ export default class App extends React.Component {
       selected_mat: false
     };
     getconfigs().then(configuracoes => {
-      global.ip = configuracoes.ip === null ? "10.0.18.70" : configuracoes.ip;
+      console.log(configuracoes);
+      global.ip = configuracoes.ip;
       global.mat_centro_custo = configuracoes.mat_centro_custo;
     });
   }

@@ -13,20 +13,25 @@ import {
   Card,
   CardItem,
   Right,
-  Thumbnail
+  Thumbnail,
+  Accordion
 } from "native-base";
 import { ScrollView } from "react-native-gesture-handler";
 import { SQLite } from "expo-sqlite";
 import BarcodeScanner from "./BarcodeScanner";
 import PhotoCamera from "./PhotoCamera";
 import config from "../config";
+import {
+  getcentrocusto,
+  setmatcentrocusto,
+  getcentrocustofiltrado
+} from "../database";
 // import Icon from "react-native-vector-icons/dist/FontAwesome";
 // import all basic components
 
 export default class BuscarBem extends Component {
   constructor(props) {
     super(props);
-    console.log(global.ip, global.mat_centro_custo);
     photo = Image.resolveAssetSource(require("../images/foto.png"));
     this.state = {
       dados: {
@@ -58,14 +63,15 @@ export default class BuscarBem extends Component {
   retbarcode = e => {
     this.setState({ filter: e, barcode: false });
     this.getbens();
+    this.trocarccusto(global.mat_centro_custo);
   };
 
   gravarobs = () => {
     this.db.transaction(
       txn => {
         txn.executeSql(
-          "INSERT INTO ptr_bem (codigo,obs) values (cast(? as int),?);",
-          [this.state.filter, this.state.observacao],
+          "INSERT INTO ptr_bem (codigo,obs,mat_centro_custo,encontado) values (cast(? as int),?,?,true);",
+          [this.state.filter, this.state.observacao, global.mat_centro_custo],
           (tx, results) => {}
         );
       },
@@ -99,6 +105,7 @@ export default class BuscarBem extends Component {
   };
 
   trocarccusto = value => {
+    console.log(value);
     this.db.transaction(
       txn => {
         txn.executeSql(
@@ -227,7 +234,9 @@ export default class BuscarBem extends Component {
         ccusto: this.state.dados.ccusto
       },
       photo: false,
-      uri: photo
+      uri: photo,
+      ccustoglobal: null,
+      ccustoglobalsigla: "a Trabalhar"
     });
     // this.getbens();
   };
@@ -247,6 +256,180 @@ export default class BuscarBem extends Component {
       return <Picker.Item label="" value="" key="0" />;
     }
   };
+
+  _trocarccustotrabalho = valor => {
+    global.mat_centro_custo = valor;
+    setmatcentrocusto(valor);
+  };
+
+  _getglobalcusto = () => {
+    let acorditem;
+    getcentrocusto()
+      .then(dados => {
+        acorditem = (
+          <View>
+            <Picker
+              selectedValue={parseInt(global.mat_centro_custo)}
+              onValueChange={this._trocarccustotrabalho}
+            >
+              <Picker.Item
+                label="Selecione um centro de custo"
+                value="0"
+                key="0"
+              />
+              {this.loadccusto(dados)}
+            </Picker>
+          </View>
+        );
+        this.setState({ cardccusto: acorditem });
+      })
+      .catch(e => {
+        console.log(e);
+      });
+    return this.state.cardccusto;
+  };
+
+  _seletormatcentrocustoform = () => {
+    getcentrocustofiltrado(parseInt(global.mat_centro_custo))
+      .then(linha => {
+        this.setState({ ccustoglobalsigla: linha.sigla });
+      })
+      .catch(e => {});
+    return (
+      <Accordion
+        dataArray={[
+          {
+            title: "Centro de Custo " + this.state.ccustoglobalsigla,
+            content: " um treco"
+          }
+        ]}
+        expanded={global.mat_centro_custo ? null : 0}
+        renderContent={this._getglobalcusto}
+      />
+    );
+  };
+
+  _topview = () => {
+    return (
+      <Card>
+        <CardItem header bordered>
+          {this._seletormatcentrocustoform()}
+        </CardItem>
+        <CardItem style={{ paddingBottom: 0 }}>
+          <Item>
+            <Icon name="ios-search" />
+            <Input
+              placeholder="Buscar Bem"
+              keyboardType="numeric"
+              onChangeText={text => this.setState({ filter: text })}
+              value={this.state.filter}
+            />
+            <Button onPress={this.getbarcode} transparent>
+              <Icon name="md-barcode" />
+            </Button>
+          </Item>
+        </CardItem>
+        <CardItem style={{ paddingTop: 0 }}>
+          <Button transparent onPress={this.getbens}>
+            <Text>Buscar</Text>
+          </Button>
+        </CardItem>
+      </Card>
+    );
+  };
+
+  _casdastrobemform = () => {
+    return (
+      <View style={styles.MainContainer}>
+        {this._topview()}
+        <Card>
+          <CardItem bordered>
+            <ScrollView>
+              <Text>Tombamento desconhecido</Text>
+              <Text>
+                Registre caracteristicas para posterior{"\n"}Incorporação:
+              </Text>
+              <Item>
+                <Icon name="ios-information-circle-outline" />
+                <Textarea
+                  rowSpan={5}
+                  placeholder="Observação"
+                  onChangeText={text => this.setState({ observacao: text })}
+                  value={this.state.observacao}
+                />
+              </Item>
+              <Button transparent onPress={this.gravarobs}>
+                <Text>OK</Text>
+              </Button>
+            </ScrollView>
+          </CardItem>
+        </Card>
+      </View>
+    );
+  };
+
+  _exibebemform = () => {
+    return (
+      <View style={styles.MainContainer}>
+        <ScrollView>
+          {this._topview()}
+          <Card key={this.state.dados.id} style={this.state.display_bem}>
+            <CardItem bordered>
+              <Button onPress={this.getphoto} transparent>
+                <Thumbnail source={{ uri: this.state.uri }} bordered />
+              </Button>
+              <Text>
+                {"   "}Tombamento: {this.state.dados.codigo}
+              </Text>
+            </CardItem>
+            <CardItem>
+              <Text>
+                Descrição do Bem:{"\n  "}
+                {this.state.dados.descricao}
+              </Text>
+            </CardItem>
+            <CardItem>
+              <Text>
+                Descrição do Produto:{"\n  "}
+                {this.state.dados.produto_descricao}
+              </Text>
+            </CardItem>
+            <CardItem
+              style={{
+                paddingBottom: 1
+              }}
+            >
+              <Text>Centro de Custo:</Text>
+            </CardItem>
+            <CardItem
+              style={{
+                paddingTop: 1
+              }}
+            >
+              <Picker
+                selectedValue={this.state.dados.ccusto}
+                onValueChange={this.trocarccusto}
+              >
+                {this.loadccusto(this.state.ccusto)}
+              </Picker>
+            </CardItem>
+            <CardItem>
+              <Text>
+                {this.state.dados.switchValue ? "Encontrado" : "Não Encontrado"}
+              </Text>
+              <Right>
+                <Switch
+                  value={this.state.dados.switchValue}
+                  onValueChange={this.toggleSwitch}
+                />
+              </Right>
+            </CardItem>
+          </Card>
+        </ScrollView>
+      </View>
+    );
+  };
+
   //Screen1 Component
   render() {
     if (this.state.barcode !== false) {
@@ -265,124 +448,9 @@ export default class BuscarBem extends Component {
         />
       );
     } else if (this.state.bemnaoencontrado !== false) {
-      return (
-        <View style={styles.MainContainer}>
-          <Item>
-            <Icon name="ios-search" />
-            <Input
-              placeholder="Buscar Bem"
-              keyboardType="numeric"
-              onChangeText={text => this.setState({ filter: text })}
-              value={this.state.filter}
-            />
-            <Button onPress={this.getbarcode} transparent>
-              <Icon name="md-barcode" />
-            </Button>
-          </Item>
-          <Button transparent onPress={this.getbens}>
-            <Text>Buscar</Text>
-          </Button>
-          <Card>
-            <CardItem bordered>
-              <ScrollView>
-                <Text>Tombamento desconhecido</Text>
-                <Text>
-                  Registre caracteristicas para posterior{"\n"}Incorporação:
-                </Text>
-                <Item>
-                  <Icon name="ios-information-circle-outline" />
-                  <Textarea
-                    rowSpan={5}
-                    placeholder="Observação"
-                    onChangeText={text => this.setState({ observacao: text })}
-                    value={this.state.observacao}
-                  />
-                </Item>
-                <Button transparent onPress={this.gravarobs}>
-                  <Text>OK</Text>
-                </Button>
-              </ScrollView>
-            </CardItem>
-          </Card>
-        </View>
-      );
+      return this._casdastrobemform();
     } else {
-      return (
-        <View style={styles.MainContainer}>
-          <Item>
-            <Icon name="ios-search" />
-            <Input
-              placeholder="Buscar Bem"
-              keyboardType="numeric"
-              onChangeText={text => this.setState({ filter: text })}
-              value={this.state.filter}
-            />
-            <Button onPress={this.getbarcode} transparent>
-              <Icon name="md-barcode" />
-            </Button>
-          </Item>
-          <Button transparent onPress={this.getbens}>
-            <Text>Buscar</Text>
-          </Button>
-          <ScrollView>
-            <View style={this.state.display_bem}>
-              <Card key={this.state.dados.id}>
-                <CardItem bordered header>
-                  <Button onPress={this.getphoto} transparent>
-                    <Thumbnail source={{ uri: this.state.uri }} bordered />
-                  </Button>
-                  <Text>
-                    {"   "}Tombamento: {this.state.dados.codigo}
-                  </Text>
-                </CardItem>
-
-                <CardItem>
-                  <Text>
-                    Descrição do Bem:{"\n  "}
-                    {this.state.dados.descricao}
-                  </Text>
-                </CardItem>
-                <CardItem>
-                  <Text>
-                    Descrição do Produto:{"\n  "}
-                    {this.state.dados.produto_descricao}
-                  </Text>
-                </CardItem>
-                <CardItem
-                  style={{
-                    paddingBottom: 1
-                  }}
-                >
-                  <Text>Centro de Custo:</Text>
-                </CardItem>
-                <CardItem
-                  style={{
-                    paddingTop: 1
-                  }}
-                >
-                  <Picker
-                    selectedValue={this.state.dados.ccusto}
-                    onValueChange={this.trocarccusto}
-                  >
-                    {this.loadccusto(this.state.ccusto)}
-                  </Picker>
-                </CardItem>
-                <CardItem>
-                  <Text>
-                    {this.state.switchValue ? "Encontrado" : "Não Encontrado"}
-                  </Text>
-                  <Right>
-                    <Switch
-                      value={this.state.dados.switchValue}
-                      onValueChange={this.toggleSwitch}
-                    />
-                  </Right>
-                </CardItem>
-              </Card>
-            </View>
-          </ScrollView>
-        </View>
-      );
+      return this._exibebemform();
     }
   }
 }

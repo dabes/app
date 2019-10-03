@@ -3,6 +3,7 @@ import config from "../config";
 import { ScrollView } from "react-navigation";
 import { Text, CardItem, Card, Button, Input, Item, Icon } from "native-base";
 import { SQLite } from "expo-sqlite";
+import { setaipconfig } from "../database";
 
 export default class Configurations extends Component {
   constructor(props) {
@@ -17,9 +18,18 @@ export default class Configurations extends Component {
     // this._populate();
   }
 
-  componentDidMount = () => {};
+  componentDidMount = () => {
+    this.setState({ ip: global.ip });
+  };
 
-  render() {
+  _okip = () => {
+    console.log(this.state.ip);
+    setaipconfig(this.state.ip).then(() => {
+      this.props.navigation.navigate("Applic");
+    });
+  };
+
+  ipconfig = () => {
     return (
       <Card>
         <ScrollView>
@@ -45,12 +55,16 @@ export default class Configurations extends Component {
             </Item>
           </CardItem>
           <CardItem>
-            <Button onPress={this._ok}>
+            <Button onPress={this._okip}>
               <Text>Confirmar</Text>
             </Button>
           </CardItem>
         </ScrollView>
       </Card>
     );
+  };
+
+  render() {
+    return this.ipconfig();
   }
 }

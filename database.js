@@ -136,6 +136,66 @@ export async function getconfigs() {
   });
 }
 
+export async function getcentrocusto() {
+  db = SQLite.openDatabase(
+    config.database.name,
+    config.database.version,
+    config.database.description,
+    config.database.size
+  );
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      tx => {
+        tx.executeSql("select * from mat_centro_custo", [], (txn, res) => {
+          var len = res.rows.length;
+          let dados = [];
+          for (let i = 0; i < len; i++) {
+            let row = res.rows.item(i);
+            dados.push({ value: row.id, label: row.sigla });
+          }
+          resolve(dados);
+        });
+      },
+      error => {
+        reject(error);
+        console.log(error);
+      }
+    );
+  });
+}
+
+export async function getcentrocustofiltrado(value) {
+  db = SQLite.openDatabase(
+    config.database.name,
+    config.database.version,
+    config.database.description,
+    config.database.size
+  );
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      tx => {
+        tx.executeSql(
+          "select * from mat_centro_custo where id = ? ",
+          [value],
+          (txn, res) => {
+            var len = res.rows.length;
+            let centrocusto;
+            for (let i = 0; i < len; i++) {
+              let row = res.rows.item(i);
+              centrocusto = row;
+            }
+            resolve(centrocusto);
+          }
+        );
+      },
+      error => {
+        reject(error);
+        console.log(error);
+      }
+    );
+  });
+}
+
 export async function setmatcentrocusto(valor) {
   db = SQLite.openDatabase(
     config.database.name,
@@ -148,6 +208,32 @@ export async function setmatcentrocusto(valor) {
       tx => {
         tx.executeSql(
           "update configuracoes set valor = ? where tipo = 'mat_centro_custo'",
+          [valor],
+          (txn, res) => {
+            resolve(true);
+          }
+        );
+      },
+      error => {
+        reject(error);
+        console.log(error);
+      }
+    );
+  });
+}
+
+export async function setaipconfig(valor) {
+  db = SQLite.openDatabase(
+    config.database.name,
+    config.database.version,
+    config.database.description,
+    config.database.size
+  );
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      tx => {
+        tx.executeSql(
+          "update configuracoes set valor = ? where tipo = 'ip'",
           [valor],
           (txn, res) => {
             resolve(true);

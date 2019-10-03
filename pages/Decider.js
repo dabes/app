@@ -8,9 +8,7 @@ export default class Decider extends React.Component {
 
   // Fetch the token from storage then navigate to our appropriate place
   _bootstrapAsync = async () => {
-    this.props.navigation.navigate(
-      global.mat_centro_custo ? "Applic" : "Configurations"
-    );
+    this.props.navigation.navigate(global.ip ? "Applic" : "Configurations");
   };
 
   // Render any loading content that you like here

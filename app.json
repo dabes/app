@@ -23,9 +23,7 @@
       "bundleIdentifier": "com.sgp.inventario"
     },
     "android": {
-      "package": "com.sgp.inventario",
-      "publishBundlePath": "android\\app\\src\\main\\assets\\shell-app.bundle",
-      "publishManifestPath": "android\\app\\src\\main\\assets\\shell-app-manifest.json"
+      "package": "com.sgp.inventario"
     },
     "platforms": ["ios", "android", "web"]
   }
