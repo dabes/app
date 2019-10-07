@@ -28,7 +28,7 @@ export default class DescarregarBens extends Component {
       type: "image/png"
     });
     // body.append("Content-Type", "image/png");
-    fetch("http://" + global.ip + ":3000/api/fotos", {
+    fetch("http://" + global.ip + "/api/fotos", {
       method: "POST",
       headers: {
         "Content-Type": "multipart/form-data"
@@ -60,7 +60,7 @@ export default class DescarregarBens extends Component {
                 row.push(res.rows.item(i));
               }
               rows = JSON.stringify(row);
-              fetch("http://" + global.ip + ":3000/api/bens", {
+              fetch("http://" + global.ip + "/api/bens", {
                 method: "POST",
                 headers: {
                   Accept: "application/json",

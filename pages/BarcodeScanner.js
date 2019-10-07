@@ -2,7 +2,7 @@ import * as React from "react";
 import { Text, View, StyleSheet, Button } from "react-native";
 import Constants from "expo-constants";
 import * as Permissions from "expo-permissions";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, Image } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 
 export default class BarcodeScanner extends React.Component {
@@ -43,7 +43,30 @@ export default class BarcodeScanner extends React.Component {
         <BarCodeScanner
           onBarCodeScanned={scanned ? undefined : this.handleBarCodeScanned}
           style={StyleSheet.absoluteFillObject}
-        />
+        >
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              backgroundColor: "rgba(0.2, 0.2, 0.2, 0.2)",
+              alignItems: "center",
+              justifyContent: "space-around"
+            }}
+          >
+            <View
+              style={{
+                width: 300,
+                height: 100,
+                backgroundColor: "transparent",
+                borderColor: "white",
+                borderWidth: 2
+              }}
+            />
+          </View>
+        </BarCodeScanner>
         <Button title={"Fechar"} onPress={() => this.props.returnCode("")} />
 
         {scanned && (

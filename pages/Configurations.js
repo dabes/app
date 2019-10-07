@@ -59,6 +59,12 @@ export default class Configurations extends Component {
               <Text>Confirmar</Text>
             </Button>
           </CardItem>
+          <CardItem>
+            <Text>Preencher com ex:</Text>
+            <Text>servidor.com.br ou 127.0.0.1</Text>
+            <Text> ou caso tenha porta</Text>
+            <Text>servidor.com.br:porta ou 127.0.0.1:porta</Text>
+          </CardItem>
         </ScrollView>
       </Card>
     );

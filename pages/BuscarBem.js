@@ -1,7 +1,13 @@
 //This is an example code for NavigationDrawer//
 import React, { Component } from "react";
 //import react in our code.
-import { StyleSheet, View, Switch, Image } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Switch,
+  Image,
+  Button as Buttonrn
+} from "react-native";
 import {
   Input,
   Button,
@@ -50,7 +56,9 @@ export default class BuscarBem extends Component {
       observacao: null,
       fakephoto: photo.uri,
       uri: photo.uri,
-      photo: false
+      photo: false,
+      ccustoglobalsigla: null,
+      showphoto: false
     };
     this.db = SQLite.openDatabase(
       config.database.name,
@@ -58,6 +66,14 @@ export default class BuscarBem extends Component {
       config.database.description,
       config.database.size
     );
+
+    if (global.mat_centro_custo != this.state.ccustoglobalsigla) {
+      getcentrocustofiltrado(parseInt(global.mat_centro_custo))
+        .then(linha => {
+          this.setState({ ccustoglobalsigla: linha.sigla });
+        })
+        .catch(e => {});
+    }
   }
 
   retbarcode = e => {
@@ -241,10 +257,54 @@ export default class BuscarBem extends Component {
     // this.getbens();
   };
 
+  _exibirphoto = () => {
+    this.setState({ showphoto: !this.state.showphoto });
+  };
+
+  _exibirphotoform = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "column",
+          justifyContent: "flex-end"
+        }}
+      >
+        <View>
+          <Image
+            source={{ uri: this.state.uri }}
+            resizeMode={"cover"}
+            style={{ width: "100%", height: "100%" }}
+          />
+        </View>
+        <View style={{ flexDirection: "row" }}>
+          <View style={{ width: "49%", marginRight: 10 }}>
+            <Buttonrn
+              style={{ textAlign: "center" }}
+              onPress={this._exibirphoto}
+              title={"Fechar"}
+            ></Buttonrn>
+          </View>
+          <View style={{ width: "49%" }}>
+            <Buttonrn
+              style={{ textAlign: "center" }}
+              onPress={() => this.setState({ showphoto: false, photo: true })}
+              title={"Nova Foto"}
+            ></Buttonrn>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   getphoto = () => {
-    this.setState({
-      photo: true
-    });
+    if (this.state.fakephoto !== this.state.uri) {
+      this._exibirphoto();
+    } else {
+      this.setState({
+        photo: true
+      });
+    }
   };
 
   loadccusto = item => {
@@ -258,6 +318,13 @@ export default class BuscarBem extends Component {
   };
 
   _trocarccustotrabalho = valor => {
+    if (global.mat_centro_custo != valor) {
+      getcentrocustofiltrado(parseInt(valor))
+        .then(linha => {
+          this.setState({ ccustoglobalsigla: linha.sigla });
+        })
+        .catch(e => {});
+    }
     global.mat_centro_custo = valor;
     setmatcentrocusto(valor);
   };
@@ -290,16 +357,15 @@ export default class BuscarBem extends Component {
   };
 
   _seletormatcentrocustoform = () => {
-    getcentrocustofiltrado(parseInt(global.mat_centro_custo))
-      .then(linha => {
-        this.setState({ ccustoglobalsigla: linha.sigla });
-      })
-      .catch(e => {});
     return (
       <Accordion
         dataArray={[
           {
-            title: "Centro de Custo " + this.state.ccustoglobalsigla,
+            title:
+              "Centro de Custo " +
+              (this.state.ccustoglobalsigla
+                ? this.state.ccustoglobalsigla
+                : "a Trabalhar"),
             content: " um treco"
           }
         ]}
@@ -382,29 +448,23 @@ export default class BuscarBem extends Component {
                 {"   "}Tombamento: {this.state.dados.codigo}
               </Text>
             </CardItem>
-            <CardItem>
-              <Text>
-                Descrição do Bem:{"\n  "}
-                {this.state.dados.descricao}
-              </Text>
+            <CardItem style={styles.CardTitulo}>
+              <Text>Descrição do Bem:</Text>
             </CardItem>
-            <CardItem>
-              <Text>
-                Descrição do Produto:{"\n  "}
-                {this.state.dados.produto_descricao}
-              </Text>
+            <CardItem style={styles.CardContent}>
+              <Text>{this.state.dados.descricao}</Text>
             </CardItem>
-            <CardItem
-              style={{
-                paddingBottom: 1
-              }}
-            >
+            <CardItem style={styles.CardTitulo}>
+              <Text>Descrição do Produto:</Text>
+            </CardItem>
+            <CardItem style={styles.CardContent}>
+              <Text>{this.state.dados.produto_descricao}</Text>
+            </CardItem>
+            <CardItem style={styles.CardTitulo}>
               <Text>Centro de Custo:</Text>
             </CardItem>
             <CardItem
-              style={{
-                paddingTop: 1
-              }}
+              style={(styles.CardContent, { paddingLeft: 10, height: 10 })}
             >
               <Picker
                 selectedValue={this.state.dados.ccusto}
@@ -413,7 +473,9 @@ export default class BuscarBem extends Component {
                 {this.loadccusto(this.state.ccusto)}
               </Picker>
             </CardItem>
-            <CardItem>
+            <CardItem
+              style={(styles.CardTitulo, { marginBottom: 5, marginTop: 5 })}
+            >
               <Text>
                 {this.state.dados.switchValue ? "Encontrado" : "Não Encontrado"}
               </Text>
@@ -432,7 +494,11 @@ export default class BuscarBem extends Component {
 
   //Screen1 Component
   render() {
-    if (this.state.barcode !== false) {
+    if (this.state.showphoto) {
+      {
+        return this._exibirphotoform();
+      }
+    } else if (this.state.barcode !== false) {
       return (
         <BarcodeScanner
           navigation={this.props.navigation}
@@ -464,5 +530,13 @@ const styles = StyleSheet.create({
   },
   Labels: {
     color: "#c6c6c6"
+  },
+  CardTitulo: {
+    paddingBottom: 0,
+    marginBottom: 0
+  },
+  CardContent: {
+    paddingTop: 0,
+    marginTop: 0
   }
 });

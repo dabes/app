@@ -47,7 +47,7 @@ export default class CarregarBens extends Component {
     this.db.transaction(txn => {
       txn.executeSql("delete from ptr_bem");
     });
-    await timeout(10000, fetch("http://" + global.ip + ":3000/api/bens"))
+    await timeout(10000, fetch("http://" + global.ip + "/api/bens"))
       .then(response => {
         response.json().then(a => {
           let dados = "";
@@ -108,7 +108,7 @@ export default class CarregarBens extends Component {
         });
       });
 
-    await timeout(10000, fetch("http://" + global.ip + ":3000/api/mat"))
+    await timeout(10000, fetch("http://" + global.ip + "/api/mat"))
       .then(response => {
         response.json().then(a => {
           let dados = "";

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SGP Inventário",
-    "slug": "expo-template-bare",
+    "slug": "sgpinvetario",
     "icon": "./images/icon.png",
     "privacy": "unlisted",
     "sdkVersion": "34.0.0",
@@ -13,17 +13,22 @@
     },
     "androidStatusBarColor": "#000000",
     "loading": {
-      "icon": "./images/icon.png",
+      "icon": "./images/icon-adaptive.png",
       "backgroundColor": "#000000"
     },
     "splash": {
-      "backgroundColor": "#000000"
+      "backgroundColor": "#000000",
+      "image": "./images/icon.png"
     },
     "ios": {
-      "bundleIdentifier": "com.sgp.inventario"
+      "bundleIdentifier": "com.ailti.sgpinventario"
     },
     "android": {
-      "package": "com.sgp.inventario"
+      "package": "com.sgp.inventario",
+      "adaptiveIcon": {
+        "foregroundImage": "./images/icon-adaptive.png",
+        "backgroundColor": "#000000"
+      }
     },
     "platforms": ["ios", "android", "web"]
   }
